@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ตรวจหวย Pro Max</title>
+<title>ตรวจหวย 888</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -11,6 +11,7 @@ margin:0;
 font-family:sans-serif;
 background:#0f2a5a;
 color:#fff;
+overflow-x:hidden;
 }
 
 .navbar{
@@ -34,7 +35,7 @@ margin-bottom:20px;
 }
 
 .big{
-font-size:40px;
+font-size:42px;
 color:red;
 text-align:center;
 font-weight:bold;
@@ -56,21 +57,67 @@ border-radius:8px;
 cursor:pointer;
 }
 
-button:hover{
-background:#b71c1c;
-}
+button:hover{background:#b71c1c}
 
 #result{
-margin-top:10px;
-font-size:20px;
+margin-top:15px;
+font-size:26px;
+font-weight:bold;
+text-align:center;
+}
+
+/* เอฟเฟคเต็มจอ */
+#effect{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+display:none;
+z-index:9999;
+font-size:50px;
+text-align:center;
+}
+
+.effect-text{
+position:absolute;
+top:40%;
+width:100%;
+font-size:60px;
 font-weight:bold;
 }
+
+/* 🎆 พลุ */
+.firework{
+position:absolute;
+font-size:40px;
+animation:boom 1s ease-out forwards;
+}
+
+@keyframes boom{
+0%{transform:scale(0);opacity:1}
+100%{transform:scale(2);opacity:0}
+}
+
+/* 😂 หน้าเยาะ */
+.laugh{
+position:absolute;
+font-size:50px;
+animation:fall 1.5s linear forwards;
+}
+
+@keyframes fall{
+0%{transform:translateY(-50px);opacity:1}
+100%{transform:translateY(300px);opacity:0}
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="navbar">🎯 ตรวจหวย PRO MAX</div>
+<div class="navbar">🎯 ตรวจหวย 888</div>
 
 <div class="container">
 
@@ -91,107 +138,124 @@ font-weight:bold;
 
 </div>
 
+<!-- เอฟเฟค -->
+<div id="effect"></div>
+
+<audio id="sound-win" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+<audio id="sound-lose" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-laugh-404.mp3"></audio>
+
 <script>
 
-// 🔹 fallback (มีไว้กัน API ล่ม)
-let data = {
-first: "309612",
-last2: "77",
-front3: ["355","108"],
-back3: ["868","424"]
+// fallback
+let data={
+first:"309612",
+last2:"77",
+front3:["355","108"],
+back3:["868","424"]
 };
 
-// 🔹 render (ใช้แบบปลอดภัย)
 function render(date){
-
-document.getElementById("date").innerText = date;
-
-document.getElementById("first").innerText = data.first;
-
-document.getElementById("front3").innerText = data.front3.join(",");
-
-document.getElementById("back3").innerText = data.back3.join(",");
-
-document.getElementById("last2").innerText = data.last2;
+document.getElementById("date").innerText=date;
+document.getElementById("first").innerText=data.first;
+document.getElementById("front3").innerText=data.front3.join(",");
+document.getElementById("back3").innerText=data.back3.join(",");
+document.getElementById("last2").innerText=data.last2;
 }
 
-// 🔹 โหลด API
+// โหลด API
 async function loadData(){
 try{
+let res=await fetch("https://lotto.api.rayriffy.com/latest");
+let json=await res.json();
+let d=json.response;
 
-let res = await fetch("https://lotto.api.rayriffy.com/latest");
+data.first=d.prizes.find(p=>p.id===1)?.number||data.first;
+data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว")?.number||data.last2;
+data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number)||data.front3;
+data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number)||data.back3;
 
-if(!res.ok) throw "error";
-
-let json = await res.json();
-
-if(!json || !json.response) throw "error";
-
-let d = json.response;
-
-// อัปเดตข้อมูล
-data.first = d.prizes.find(p=>p.id===1)?.number || data.first;
-
-data.last2 = d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว")?.number || data.last2;
-
-data.front3 = d.runningNumbers
-  .filter(x=>x.prize.includes("เลขหน้า"))
-  .map(x=>x.number) || data.front3;
-
-data.back3 = d.runningNumbers
-  .filter(x=>x.prize.includes("เลขท้าย 3 ตัว"))
-  .map(x=>x.number) || data.back3;
-
-// แสดงผล
 render(d.date);
 
-}catch(e){
-console.log("ใช้ fallback", e);
+}catch{
 render("งวดล่าสุด");
 }
 }
 
-// 🔹 ตรวจหวย
+loadData();
+
+// 🎆 เอฟเฟคถูกรางวัล
+function winEffect(){
+let e=document.getElementById("effect");
+e.innerHTML='<div class="effect-text">🎉 เลี้ยงด้วยน๊าา 🎉</div>';
+e.style.display="block";
+
+// เสียง
+document.getElementById("sound-win").play();
+
+// พลุ
+for(let i=0;i<20;i++){
+let f=document.createElement("div");
+f.className="firework";
+f.innerText="🎆";
+f.style.left=Math.random()*100+"%";
+f.style.top=Math.random()*80+"%";
+e.appendChild(f);
+}
+
+setTimeout(()=>{e.style.display="none";e.innerHTML=""},2000);
+}
+
+// 😂 เอฟเฟคไม่ถูก
+function loseEffect(){
+let e=document.getElementById("effect");
+e.innerHTML='<div class="effect-text">😏 สมน้ำหน้า กินมาม่าไปก่อน</div>';
+e.style.display="block";
+
+// เสียง
+document.getElementById("sound-lose").play();
+
+// อิโมจิตก
+for(let i=0;i<20;i++){
+let l=document.createElement("div");
+l.className="laugh";
+l.innerText="😂";
+l.style.left=Math.random()*100+"%";
+e.appendChild(l);
+}
+
+setTimeout(()=>{e.style.display="none";e.innerHTML=""},2000);
+}
+
+// ตรวจหวย
 function check(){
+let num=document.getElementById("num").value.trim();
+let result=document.getElementById("result");
 
-let num = document.getElementById("num").value.trim();
-let result = document.getElementById("result");
+if(!num){result.innerText="กรอกเลขก่อน";return;}
 
-if(!num){
-result.innerText = "กรอกเลขก่อน";
-return;
+if(num===data.first){
+result.innerText="🎉 เลี้ยงด้วยน๊าา";
+winEffect();
 }
-
-if(!/^\d+$/.test(num)){
-result.innerText = "กรอกตัวเลขเท่านั้น";
-return;
-}
-
-if(num.length < 2 || num.length > 6){
-result.innerText = "กรอก 2-6 หลัก";
-return;
-}
-
-if(num.length === 6 && num === data.first){
-result.innerText = "🎉 เลี้ยงด้วยน๊าา";
-}
-else if(num.slice(-2) === data.last2){
-result.innerText = "🎊 ถูกเลขท้าย 2 ตัว";
+else if(num.slice(-2)===data.last2){
+result.innerText="🎊 ถูกเลขท้าย 2 ตัว";
+winEffect();
 }
 else if(data.front3.includes(num.slice(-3))){
-result.innerText = "🎉 ถูกเลขหน้า 3 ตัว";
+result.innerText="🎉 ถูกเลขหน้า 3 ตัว";
+winEffect();
 }
 else if(data.back3.includes(num.slice(-3))){
-result.innerText = "🎉 ถูกเลขท้าย 3 ตัว";
+result.innerText="🎉 ถูกเลขท้าย 3 ตัว";
+winEffect();
 }
 else{
-result.innerText = "😏 สมน้ำหน้า กินมาม่าไปก่อน";
+result.innerText="😏 สมน้ำหน้า กินมาม่าไปก่อน";
+loseEffect();
 }
 }
 
-// 🔥 โหลดทันทีตอนเปิด
 render("งวดล่าสุด");
-loadData();
 
 </script>
 
