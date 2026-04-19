@@ -6,12 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{font-family:sans-serif;background:#f0f2f5;margin:0}
-.navbar{background:#111;color:#fff;padding:15px}
+body{font-family:sans-serif;background:#0f1f4b;margin:0;color:#fff}
+.navbar{background:#000;padding:15px;font-size:18px}
 .container{max-width:900px;margin:auto;padding:20px}
-.card{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px}
-.big{font-size:40px;color:red;text-align:center}
-button{padding:10px;background:red;color:white;border:none;border-radius:8px;cursor:pointer}
+.card{background:#fff;color:#000;padding:20px;border-radius:12px;margin-bottom:20px}
+.big{font-size:48px;color:red;text-align:center;font-weight:bold}
+button{padding:10px 20px;background:red;color:white;border:none;border-radius:8px;cursor:pointer}
 input{padding:10px;width:60%;border-radius:6px;border:1px solid #ccc}
 button:hover{background:#b71c1c}
 </style>
@@ -33,11 +33,15 @@ button:hover{background:#b71c1c}
 
 <div class="card">
 <input id="num" placeholder="กรอกเลข">
-<button onclick="check()">ตรวจ</button>
+<button onclick="spinCheck()">ตรวจ</button>
 <p id="result"></p>
 </div>
 
 </div>
+
+<!-- 🔊 เสียง -->
+<audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+<audio id="loseSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3"></audio>
 
 <script>
 
@@ -58,37 +62,52 @@ document.getElementById("back3").innerText=data.back3.join(",");
 document.getElementById("last2").innerText=data.last2;
 }
 
-// โหลดข้อมูล
+// แสดงก่อน
+render("งวดล่าสุด");
+
+// โหลด API
 async function loadData(){
 try{
-let res=await fetch("https://lotto.api.rayriffy.com/latest");
-
-if(!res.ok) throw "error";
-
+let res=await fetch("https://api.allorigins.win/raw?url=https://lotto.api.rayriffy.com/latest");
 let json=await res.json();
-
-if(!json || !json.response) throw "error";
 
 let d=json.response;
 
 data.first=d.prizes.find(p=>p.id===1)?.number || data.first;
 data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว")?.number || data.last2;
-data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number) || data.front3;
-data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number) || data.back3;
+data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number);
+data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number);
 
 render(d.date);
 
 }catch(e){
-console.log("ใช้ fallback",e);
-render("งวดล่าสุด (สำรอง)");
+render("งวดล่าสุด");
 }
 }
 
 loadData();
 
 
-// 🔥 เอฟเฟกต์เว่อ (ไม่ค้าง)
-function bigEffect(type){
+// 🎰 หมุนเลข
+function spinCheck(){
+let display=document.getElementById("first");
+let count=0;
+
+let spin=setInterval(()=>{
+display.innerText=Math.floor(Math.random()*999999).toString().padStart(6,"0");
+count++;
+
+if(count>15){
+clearInterval(spin);
+display.innerText=data.first;
+check();
+}
+},80);
+}
+
+
+// 🎆 เอฟเฟกต์
+function effect(type){
 
 const overlay=document.createElement("div");
 overlay.style.position="fixed";
@@ -100,14 +119,9 @@ overlay.style.pointerEvents="none";
 overlay.style.zIndex=9999;
 document.body.appendChild(overlay);
 
-// 🎉 emoji set
-let emojiWin=["🎉","💰","🔥","🎆","🥳"];
-let emojiLose=["😂","😭","💀","❌","🤣"];
+let emoji = type==="win" ? ["🎉","💰","🔥","🎆","🥳"] : ["😂","😭","💀","❌","🤣"];
 
-let emoji = type==="win" ? emojiWin : emojiLose;
-
-// ยิง 150 ชิ้น
-for(let i=0;i<150;i++){
+for(let i=0;i<120;i++){
 let el=document.createElement("div");
 el.innerText=emoji[Math.floor(Math.random()*emoji.length)];
 el.style.position="absolute";
@@ -124,32 +138,14 @@ el.style.transform=`rotate(${Math.random()*720}deg)`;
 },50);
 }
 
-// 💥 ระเบิดกลางจอ
-let boom=document.createElement("div");
-boom.innerText= type==="win" ? "🎆💥🎆" : "💀💥💀";
-boom.style.position="absolute";
-boom.style.top="40%";
-boom.style.left="50%";
-boom.style.transform="translate(-50%,-50%) scale(1)";
-boom.style.fontSize="80px";
-boom.style.transition="all 0.5s ease";
-
-overlay.appendChild(boom);
-
-setTimeout(()=>{
-boom.style.transform="translate(-50%,-50%) scale(2)";
-},100);
-
-// 🧹 ลบหลังจบ
-setTimeout(()=>{
-overlay.remove();
-},2200);
-
+// ลบ
+setTimeout(()=>overlay.remove(),2200);
 }
 
 
 // ตรวจหวย
 function check(){
+
 let num=document.getElementById("num").value;
 let result=document.getElementById("result");
 
@@ -160,24 +156,30 @@ return;
 
 if(num===data.first){
 result.innerText="🎉 รางวัลที่ 1";
-bigEffect("win");
+document.getElementById("winSound").play();
+effect("win");
 }
 else if(num.slice(-2)===data.last2){
 result.innerText="🎊 เลขท้าย 2 ตัว";
-bigEffect("win");
+document.getElementById("winSound").play();
+effect("win");
 }
 else if(data.front3.includes(num.slice(-3))){
 result.innerText="🎉 หน้า 3 ตัว";
-bigEffect("win");
+document.getElementById("winSound").play();
+effect("win");
 }
 else if(data.back3.includes(num.slice(-3))){
 result.innerText="🎉 ท้าย 3 ตัว";
-bigEffect("win");
+document.getElementById("winSound").play();
+effect("win");
 }
 else{
 result.innerText="❌ ไม่ถูกรางวัล";
-bigEffect("lose");
+document.getElementById("loseSound").play();
+effect("lose");
 }
+
 }
 
 </script>
