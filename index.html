@@ -2,200 +2,45 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ตรวจหวย + ดวงรายวัน PRO</title>
+<title>ตรวจหวย PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap" rel="stylesheet">
-
 <style>
-body{
-  font-family:'Prompt', sans-serif;
-  margin:0;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
-  color:#333;
-}
-
-/* Navbar */
-.navbar{
-  background:#111;
-  color:white;
-  padding:15px 20px;
-  display:flex;
-  justify-content:space-between;
-}
-
-/* Layout */
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:20px;
-}
-
-.card{
-  background:white;
-  border-radius:15px;
-  padding:20px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.2);
-}
-
-/* หวย */
-.big{
-  font-size:42px;
-  color:#e53935;
-  font-weight:bold;
-  text-align:center;
-}
-
-.row{
-  display:flex;
-  justify-content:space-around;
-  margin-top:15px;
-}
-
-input, select{
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  width:70%;
-}
-
-button{
-  padding:10px 20px;
-  background:#e53935;
-  color:white;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#b71c1c;
-}
-
-/* ดวง */
-.horo-box{
-  margin-top:15px;
-  padding:15px;
-  border-radius:10px;
-  background:#ffe0b2;
-  font-weight:bold;
-  text-align:center;
-}
-
-/* เอฟเฟกต์ */
-#effect{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-  z-index:9999;
-}
-
-@keyframes shake {
-  0%{transform:translate(0)}
-  25%{transform:translate(-5px)}
-  50%{transform:translate(5px)}
-  75%{transform:translate(-5px)}
-  100%{transform:translate(0)}
-}
-.shake{animation:shake 0.4s;}
-
-@media(max-width:768px){
-  .container{grid-template-columns:1fr;}
-}
+body{font-family:sans-serif;background:#f0f2f5;margin:0}
+.navbar{background:#111;color:#fff;padding:15px}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px}
+.big{font-size:40px;color:red;text-align:center}
+button{padding:10px;background:red;color:white;border:none;border-radius:8px}
+input{padding:10px;width:60%}
 </style>
 </head>
 
 <body>
 
-<div class="navbar">
-  <div>🎯 ตรวจหวย PRO</div>
-  <div>หวย | ดวงรายวัน</div>
-</div>
+<div class="navbar">🎯 ตรวจหวย</div>
 
 <div class="container">
 
-<!-- LEFT -->
-<div>
-
 <div class="card">
-<h2>ผลสลากกินแบ่งรัฐบาล</h2>
-<p id="date">กำลังโหลด...</p>
-
+<h3 id="date">กำลังโหลด...</h3>
 <div id="first" class="big">------</div>
-
-<div class="row">
-<div><p>หน้า 3 ตัว</p><p id="front3">---</p></div>
-<div><p>ท้าย 3 ตัว</p><p id="back3">---</p></div>
-<div><p>ท้าย 2 ตัว</p><p id="last2">--</p></div>
-</div>
+<p>หน้า 3 ตัว: <span id="front3">---</span></p>
+<p>ท้าย 3 ตัว: <span id="back3">---</span></p>
+<p>ท้าย 2 ตัว: <span id="last2">--</span></p>
 </div>
 
 <div class="card">
-<h3>🍀 ตรวจหวย</h3>
-<input id="num" placeholder="กรอกเลข 2-6 หลัก">
-<br><br>
+<input id="num">
 <button onclick="check()">ตรวจ</button>
 <p id="result"></p>
 </div>
 
 </div>
 
-<!-- RIGHT -->
-<div class="card">
-<h3>🔮 ดวงประจำวัน</h3>
-
-<select id="day">
-<option>จันทร์</option>
-<option>อังคาร</option>
-<option>พุธ</option>
-<option>พฤหัส</option>
-<option>ศุกร์</option>
-<option>เสาร์</option>
-<option>อาทิตย์</option>
-</select>
-
-<br><br>
-<button onclick="getHoro()">ดูดวง</button>
-
-<div id="horo" class="horo-box">เลือกวันเพื่อดูดวง</div>
-</div>
-
-</div>
-
-<canvas id="effect"></canvas>
-
 <script>
 
-// =================== 🔮 ดวง ===================
-const horoData={
-"จันทร์":["มีโชคลาภ","การเงินดี","ได้ข่าวดี"],
-"อังคาร":["งานก้าวหน้า","เงินเข้า","ระวังสุขภาพ"],
-"พุธ":["ความรักดี","โชคเล็กๆ","ลาภลอย"],
-"พฤหัส":["ผู้ใหญ่ช่วย","งานดี","ข่าวดี"],
-"ศุกร์":["เสน่ห์แรง","เงินดี","โชคมา"],
-"เสาร์":["เหนื่อยแต่คุ้ม","โชคปลายวัน"],
-"อาทิตย์":["สดใส","โชคดี","มีคนช่วย"]
-};
-
-function getHoro(){
-let day=document.getElementById("day").value;
-let seed=new Date().getDate();
-let list=horoData[day];
-document.getElementById("horo").innerText=list[seed%list.length];
-}
-
-// =================== 🎯 หวย ===================
-const API_LIST=[
-"https://lotto.api.rayriffy.com/latest",
-"https://api.allorigins.win/raw?url=https://lotto.api.rayriffy.com/latest"
-];
-
+// fallback (สำคัญ)
 let data={
 first:"309612",
 last2:"77",
@@ -203,124 +48,68 @@ front3:["355","108"],
 back3:["868","424"]
 };
 
-function render(dateText){
-document.getElementById("date").innerText=dateText;
+// render ปลอดภัย
+function render(date){
+document.getElementById("date").innerText=date;
 document.getElementById("first").innerText=data.first;
+document.getElementById("front3").innerText=data.front3.join(",");
+document.getElementById("back3").innerText=data.back3.join(",");
 document.getElementById("last2").innerText=data.last2;
-document.getElementById("front3").innerText=data.front3.join(" , ");
-document.getElementById("back3").innerText=data.back3.join(" , ");
 }
 
+// โหลดข้อมูล
 async function loadData(){
-
-// cache
-let cache=localStorage.getItem("lottoData");
-if(cache){
-data=JSON.parse(cache);
-render("ข้อมูลล่าสุด");
-}
-
-// try API
-for(let url of API_LIST){
 try{
-let res=await fetch(url);
+let res=await fetch("https://lotto.api.rayriffy.com/latest");
+
+if(!res.ok) throw "error";
+
 let json=await res.json();
+
+if(!json || !json.response) throw "error";
+
 let d=json.response;
 
-data.first=d.prizes.find(p=>p.id===1).number;
-data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว").number;
-data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number);
-data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number);
-
-localStorage.setItem("lottoData",JSON.stringify(data));
+data.first=d.prizes.find(p=>p.id===1)?.number || data.first;
+data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว")?.number || data.last2;
+data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number) || data.front3;
+data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number) || data.back3;
 
 render(d.date);
-return;
 
-}catch(e){}
-}
-
+}catch(e){
+console.log("ใช้ fallback",e);
 render("งวดล่าสุด (สำรอง)");
+}
 }
 
 loadData();
 
-// =================== 🎉 เอฟเฟกต์ ===================
-function confetti(){
-const canvas=document.getElementById("effect");
-const ctx=canvas.getContext("2d");
-
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-let pieces=[];
-for(let i=0;i<150;i++){
-pieces.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-size:Math.random()*8+2,
-speed:Math.random()*3+2,
-color:`hsl(${Math.random()*360},100%,50%)`
-});
-}
-
-let frame=0;
-function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-pieces.forEach(p=>{
-ctx.fillStyle=p.color;
-ctx.fillRect(p.x,p.y,p.size,p.size);
-p.y+=p.speed;
-if(p.y>canvas.height)p.y=0;
-});
-frame++;
-if(frame<120)requestAnimationFrame(draw);
-}
-draw();
-}
-
-// =================== 🔍 ตรวจหวย ===================
+// ตรวจหวย
 function check(){
 let num=document.getElementById("num").value;
 let result=document.getElementById("result");
 
-if(!/^\d+$/.test(num)){
-result.innerText="⚠️ กรอกตัวเลขเท่านั้น";
+if(!num){
+result.innerText="กรอกเลขก่อน";
 return;
 }
 
-if(num.length<2||num.length>6){
-result.innerText="⚠️ กรอก 2-6 หลัก";
-return;
+if(num===data.first){
+result.innerText="🎉 รางวัลที่ 1";
 }
-
-if(num.length===6 && num===data.first){
-result.innerText="🎉 ถูกรางวัลที่ 1";
-confetti();
-return;
+else if(num.slice(-2)===data.last2){
+result.innerText="🎊 เลขท้าย 2 ตัว";
 }
-
-if(num.slice(-2)===data.last2){
-result.innerText="🎊 ถูกเลขท้าย 2 ตัว";
-confetti();
-return;
-}
-
-if(data.front3.includes(num.slice(-3))){
+else if(data.front3.includes(num.slice(-3))){
 result.innerText="🎉 หน้า 3 ตัว";
-confetti();
-return;
 }
-
-if(data.back3.includes(num.slice(-3))){
+else if(data.back3.includes(num.slice(-3))){
 result.innerText="🎉 ท้าย 3 ตัว";
-confetti();
-return;
 }
-
+else{
 result.innerText="❌ ไม่ถูกรางวัล";
-document.body.classList.add("shake");
-setTimeout(()=>document.body.classList.remove("shake"),400);
+}
 }
 
 </script>
