@@ -2,29 +2,55 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ตรวจหวย</title>
+<title>ตรวจหวย + ดวงรายวัน</title>
 
 <style>
 body{
   font-family:sans-serif;
   background:#f5f5f5;
-  text-align:center;
+  margin:0;
 }
 
+/* 🔝 Navbar */
+.navbar{
+  background:#111;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+
+/* 🎞️ Slider */
+.slider{
+  height:200px;
+  background:#333;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+}
+
+/* 📦 Layout */
 .container{
-  max-width:800px;
+  max-width:1100px;
   margin:auto;
+  padding:20px;
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
 }
 
-.result-box{
+/* 🎯 กล่อง */
+.box{
   background:white;
   padding:20px;
   border-radius:12px;
-  margin-bottom:20px;
   box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-.big-number{
+/* หวย */
+.big{
   font-size:40px;
   color:red;
   font-weight:bold;
@@ -33,149 +59,180 @@ body{
 .row{
   display:flex;
   justify-content:space-around;
-  margin-top:15px;
-  flex-wrap:wrap;
 }
 
-.check-box{
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+/* 🔮 ดวง */
+.horo{
+  text-align:center;
 }
 
-input{
+select, button, input{
   padding:10px;
-  width:60%;
-  border-radius:8px;
-  border:1px solid #ccc;
+  margin:5px;
 }
 
 button{
-  padding:10px 20px;
   background:red;
   color:white;
   border:none;
   border-radius:8px;
   cursor:pointer;
 }
-
-button:hover{
-  background:#b71c1c;
-}
 </style>
 </head>
 
 <body>
 
+<div class="navbar">
+  <div>🎯 เว็บตรวจหวย</div>
+  <div>ตรวจหวย | ดวงรายวัน</div>
+</div>
+
+<!-- 🎞️ Slider -->
+<div class="slider" id="slider">
+  ข่าว 1: ตรวจหวยออนไลน์ง่ายๆ
+</div>
+
 <div class="container">
 
-  <h1>ตรวจสลากกินแบ่งรัฐบาล</h1>
-  <h3 id="date">กำลังโหลด...</h3>
+  <!-- 🎯 ฝั่งซ้าย -->
+  <div>
 
-  <div class="result-box">
-    <h2>รางวัลที่ 1</h2>
-    <div id="first" class="big-number">------</div>
+    <div class="box">
+      <h2>ผลสลากกินแบ่งรัฐบาล</h2>
+      <p id="date">กำลังโหลด...</p>
 
-    <div class="row">
-      <div>
-        <h4>เลขหน้า 3 ตัว</h4>
-        <p id="front3">---</p>
-      </div>
+      <div class="big" id="first">------</div>
 
-      <div>
-        <h4>เลขท้าย 3 ตัว</h4>
-        <p id="back3">---</p>
-      </div>
+      <div class="row">
+        <div>
+          <p>หน้า 3 ตัว</p>
+          <p id="front3">---</p>
+        </div>
 
-      <div>
-        <h4>เลขท้าย 2 ตัว</h4>
-        <p id="last2">--</p>
+        <div>
+          <p>ท้าย 3 ตัว</p>
+          <p id="back3">---</p>
+        </div>
+
+        <div>
+          <p>ท้าย 2 ตัว</p>
+          <p id="last2">--</p>
+        </div>
       </div>
     </div>
+
+    <div class="box">
+      <h3>🍀 ตรวจหวย</h3>
+      <input id="num" placeholder="กรอกเลข 2-6 หลัก">
+      <button onclick="check()">ตรวจ</button>
+      <p id="result"></p>
+    </div>
+
   </div>
 
-  <div class="check-box">
-    <h3>🍀 ตรวจหวย</h3>
-    <input id="num" placeholder="กรอกเลข 2-6 หลัก">
-    <br><br>
-    <button onclick="check()">ตรวจ</button>
-    <p id="result"></p>
+  <!-- 🔮 ฝั่งขวา -->
+  <div class="box horo">
+    <h3>🔮 ดูดวงวันนี้</h3>
+
+    <select id="day">
+      <option>จันทร์</option>
+      <option>อังคาร</option>
+      <option>พุธ</option>
+      <option>พฤหัส</option>
+      <option>ศุกร์</option>
+      <option>เสาร์</option>
+      <option>อาทิตย์</option>
+    </select>
+
+    <button onclick="getHoro()">ดูดวง</button>
+
+    <p id="horo"></p>
   </div>
 
 </div>
 
 <script>
 
+// 🎞️ Slider
+let news = [
+  "ข่าว 1: ตรวจหวยออนไลน์ง่ายๆ",
+  "ข่าว 2: งวดนี้เลขดังมาแรง",
+  "ข่าว 3: เทคนิคดูเลขเด็ด"
+];
+let i=0;
+setInterval(()=>{
+  i=(i+1)%news.length;
+  document.getElementById("slider").innerText = news[i];
+},3000);
+
+// 🔮 ดวง
+let horoList = [
+  "วันนี้โชคลาภเด่นมาก",
+  "ระวังการใช้เงิน",
+  "มีคนช่วยเหลือ",
+  "การงานดีขึ้น",
+  "ความรักสดใส",
+  "มีโชคจากตัวเลข"
+];
+
+function getHoro(){
+  let rand = Math.floor(Math.random()*horoList.length);
+  document.getElementById("horo").innerText = horoList[rand];
+}
+
+// 🎯 หวย
 let data = {
-  first: "309612",
-  last2: "77",
-  last3: ["355","108","868","424"]
+  first:"309612",
+  last2:"77",
+  front3:["355","108"],
+  back3:["868","424"]
 };
 
-// 🔥 โหลดข้อมูลจริง + fallback
-async function loadData() {
-  try {
+async function loadData(){
+  try{
     const res = await fetch("https://api.allorigins.win/raw?url=https://lotto.api.rayriffy.com/latest");
     const json = await res.json();
 
     let d = json.response;
 
-    document.getElementById("date").innerHTML = d.date;
+    document.getElementById("date").innerText = d.date;
 
-    data.first = d.prizes.find(p => p.id === 1).number;
-    document.getElementById("first").innerHTML = data.first;
+    data.first = d.prizes.find(p=>p.id===1).number;
+    data.last2 = d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว").number;
 
-    data.last2 = d.runningNumbers.find(x => x.prize === "เลขท้าย 2 ตัว").number;
-    document.getElementById("last2").innerHTML = data.last2;
+    data.front3 = d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number);
+    data.back3 = d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย")).map(x=>x.number);
 
-    let front = d.runningNumbers.filter(x => x.prize.includes("เลขหน้า")).map(x=>x.number);
-    let back = d.runningNumbers.filter(x => x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number);
+    document.getElementById("first").innerText = data.first;
+    document.getElementById("last2").innerText = data.last2;
+    document.getElementById("front3").innerText = data.front3.join(",");
+    document.getElementById("back3").innerText = data.back3.join(",");
 
-    data.last3 = [...front, ...back];
-
-    document.getElementById("front3").innerHTML = front.join(" , ");
-    document.getElementById("back3").innerHTML = back.join(" , ");
-
-  } catch (e) {
-    console.log("ใช้ fallback", e);
-
-    document.getElementById("date").innerHTML = "งวดล่าสุด (สำรอง)";
-    document.getElementById("first").innerHTML = data.first;
-    document.getElementById("last2").innerHTML = data.last2;
-    document.getElementById("front3").innerHTML = data.last3.join(" , ");
-    document.getElementById("back3").innerHTML = data.last3.join(" , ");
+  }catch(e){
+    document.getElementById("date").innerText="ใช้ข้อมูลสำรอง";
   }
 }
 
 loadData();
 
-
-// 🔍 ตรวจหวย
 function check(){
-  let num = document.getElementById("num").value;
+  let num=document.getElementById("num").value;
 
-  if(!/^\d+$/.test(num)){
-    document.getElementById("result").innerHTML = "⚠️ กรอกตัวเลขเท่านั้น";
-    return;
+  if(num===data.first){
+    result.innerText="🎉 รางวัลที่ 1";
   }
-
-  if(num.length < 2 || num.length > 6){
-    document.getElementById("result").innerHTML = "⚠️ กรอก 2-6 หลัก";
-    return;
+  else if(num.slice(-2)===data.last2){
+    result.innerText="🎊 เลขท้าย 2 ตัว";
   }
-
-  if(num.length === 6 && num === data.first){
-    document.getElementById("result").innerHTML = "🎉 ถูกรางวัลที่ 1";
+  else if(data.front3.includes(num.slice(-3))){
+    result.innerText="🎉 หน้า 3 ตัว";
   }
-  else if(num.slice(-2) === data.last2){
-    document.getElementById("result").innerHTML = "🎊 ถูกเลขท้าย 2 ตัว";
-  }
-  else if(data.last3.includes(num.slice(-3))){
-    document.getElementById("result").innerHTML = "🎉 ถูกเลข 3 ตัว";
+  else if(data.back3.includes(num.slice(-3))){
+    result.innerText="🎉 ท้าย 3 ตัว";
   }
   else{
-    document.getElementById("result").innerHTML = "❌ ไม่ถูกรางวัล";
+    result.innerText="❌ ไม่ถูกรางวัล";
   }
 }
 
