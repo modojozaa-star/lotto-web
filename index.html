@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ตรวจหวย PRO MAX</title>
+<title>ตรวจหวย PRO 888</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -120,31 +120,58 @@ front3:["355","108"],
 back3:["868","424"]
 };
 
+// render (ปลอดภัย 100%)
 function render(date){
-dateEl.innerText=date;
-first.innerText=data.first;
-front3.innerText=data.front3.join(",");
-back3.innerText=data.back3.join(",");
-last2.innerText=data.last2;
+
+document.getElementById("date").innerText = date;
+
+document.getElementById("first").innerText = data.first;
+
+document.getElementById("front3").innerText = data.front3.join(",");
+
+document.getElementById("back3").innerText = data.back3.join(",");
+
+document.getElementById("last2").innerText = data.last2;
 }
 
+// 🔥 แสดงทันที (สำคัญมาก)
 render("งวดล่าสุด");
 
 // โหลด API
 async function loadData(){
 try{
-let res=await fetch("https://lotto.api.rayriffy.com/latest");
-let json=await res.json();
-let d=json.response;
 
-data.first=d.prizes.find(p=>p.id===1)?.number||data.first;
-data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว")?.number||data.last2;
-data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number)||data.front3;
-data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number)||data.back3;
+let res = await fetch("https://lotto.api.rayriffy.com/latest");
 
+if(!res.ok) throw "error";
+
+let json = await res.json();
+
+if(!json || !json.response) throw "error";
+
+let d = json.response;
+
+// อัปเดตข้อมูล
+data.first = d.prizes.find(p=>p.id===1)?.number || data.first;
+
+data.last2 = d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว")?.number || data.last2;
+
+data.front3 = d.runningNumbers
+  .filter(x=>x.prize.includes("เลขหน้า"))
+  .map(x=>x.number) || data.front3;
+
+data.back3 = d.runningNumbers
+  .filter(x=>x.prize.includes("เลขท้าย 3 ตัว"))
+  .map(x=>x.number) || data.back3;
+
+// อัปเดตหน้าเว็บ
 render(d.date);
-}catch(e){}
+
+}catch(e){
+console.log("fallback ทำงาน", e);
 }
+}
+
 loadData();
 
 // 🎆 เอฟเฟกต์ (อยู่หลัง)
