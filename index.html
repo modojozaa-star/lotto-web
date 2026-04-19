@@ -21,9 +21,13 @@ button{padding:10px 20px;background:#d32f2f;color:white;border:none;border-radiu
 </div>
 
 <script>
-let data = {};
+let data = {
+  first: "000000",
+  last2: "00",
+  last3: ["000","000"]
+};
 
-// โหลดข้อมูล
+// โหลดข้อมูลจริง
 async function loadData() {
   try {
     const res = await fetch("https://lotto.api.rayriffy.com/latest");
@@ -35,8 +39,10 @@ async function loadData() {
       .filter(x => x.prize.includes("3 ตัว"))
       .map(x => x.number);
 
+    console.log("โหลดข้อมูลสำเร็จ", data);
+
   } catch (e) {
-    console.log("โหลดไม่ได้", e);
+    console.log("ใช้ fallback แทน", e);
   }
 }
 
@@ -44,14 +50,7 @@ loadData();
 
 // ฟังก์ชันตรวจ
 function check(){
-  console.log("กดปุ่มแล้ว"); // debug
-
   let num = document.getElementById("num").value;
-
-  if(!data.first){
-    document.getElementById("result").innerHTML = "⏳ กำลังโหลดข้อมูล...";
-    return;
-  }
 
   if(num.length !== 6){
     document.getElementById("result").innerHTML = "⚠️ กรอก 6 หลัก";
