@@ -57,16 +57,14 @@ border-radius:8px;
 cursor:pointer;
 }
 
-button:hover{background:#b71c1c}
-
 #result{
 margin-top:15px;
-font-size:26px;
+font-size:28px;
 font-weight:bold;
 text-align:center;
 }
 
-/* เอฟเฟคเต็มจอ */
+/* เอฟเฟค overlay */
 #effect{
 position:fixed;
 top:0;
@@ -76,20 +74,20 @@ height:100%;
 pointer-events:none;
 display:none;
 z-index:9999;
-font-size:50px;
-text-align:center;
 }
 
+/* ข้อความใหญ่ */
 .effect-text{
 position:absolute;
 top:40%;
 width:100%;
+text-align:center;
 font-size:60px;
 font-weight:bold;
 }
 
-/* 🎆 พลุ */
-.firework{
+/* พลุ */
+.fire{
 position:absolute;
 font-size:40px;
 animation:boom 1s ease-out forwards;
@@ -100,16 +98,17 @@ animation:boom 1s ease-out forwards;
 100%{transform:scale(2);opacity:0}
 }
 
-/* 😂 หน้าเยาะ */
-.laugh{
-position:absolute;
-font-size:50px;
-animation:fall 1.5s linear forwards;
+/* จอสั่น */
+.shake{
+animation:shake 0.3s;
 }
 
-@keyframes fall{
-0%{transform:translateY(-50px);opacity:1}
-100%{transform:translateY(300px);opacity:0}
+@keyframes shake{
+0%{transform:translate(0)}
+25%{transform:translate(5px,-5px)}
+50%{transform:translate(-5px,5px)}
+75%{transform:translate(5px,5px)}
+100%{transform:translate(0)}
 }
 
 </style>
@@ -138,11 +137,10 @@ animation:fall 1.5s linear forwards;
 
 </div>
 
-<!-- เอฟเฟค -->
 <div id="effect"></div>
 
-<audio id="sound-win" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
-<audio id="sound-lose" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-laugh-404.mp3"></audio>
+<audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+<audio id="loseSound" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-laugh-404.mp3"></audio>
 
 <script>
 
@@ -183,45 +181,42 @@ render("งวดล่าสุด");
 
 loadData();
 
-// 🎆 เอฟเฟคถูกรางวัล
+// 🎆 ชนะ
 function winEffect(){
 let e=document.getElementById("effect");
 e.innerHTML='<div class="effect-text">🎉 เลี้ยงด้วยน๊าา 🎉</div>';
 e.style.display="block";
 
 // เสียง
-document.getElementById("sound-win").play();
+document.getElementById("winSound").play();
 
 // พลุ
-for(let i=0;i<20;i++){
+for(let i=0;i<30;i++){
 let f=document.createElement("div");
-f.className="firework";
+f.className="fire";
 f.innerText="🎆";
 f.style.left=Math.random()*100+"%";
 f.style.top=Math.random()*80+"%";
 e.appendChild(f);
 }
 
+// จอสั่น
+document.body.classList.add("shake");
+setTimeout(()=>document.body.classList.remove("shake"),500);
+
 setTimeout(()=>{e.style.display="none";e.innerHTML=""},2000);
 }
 
-// 😂 เอฟเฟคไม่ถูก
+// 😂 แพ้
 function loseEffect(){
 let e=document.getElementById("effect");
 e.innerHTML='<div class="effect-text">😏 สมน้ำหน้า กินมาม่าไปก่อน</div>';
 e.style.display="block";
 
-// เสียง
-document.getElementById("sound-lose").play();
+document.getElementById("loseSound").play();
 
-// อิโมจิตก
-for(let i=0;i<20;i++){
-let l=document.createElement("div");
-l.className="laugh";
-l.innerText="😂";
-l.style.left=Math.random()*100+"%";
-e.appendChild(l);
-}
+document.body.classList.add("shake");
+setTimeout(()=>document.body.classList.remove("shake"),500);
 
 setTimeout(()=>{e.style.display="none";e.innerHTML=""},2000);
 }
