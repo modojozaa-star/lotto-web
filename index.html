@@ -11,14 +11,15 @@ body{font-family:sans-serif;background:#f0f2f5;margin:0}
 .container{max-width:900px;margin:auto;padding:20px}
 .card{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px}
 .big{font-size:40px;color:red;text-align:center}
-button{padding:10px;background:red;color:white;border:none;border-radius:8px}
-input{padding:10px;width:60%}
+button{padding:10px;background:red;color:white;border:none;border-radius:8px;cursor:pointer}
+input{padding:10px;width:60%;border-radius:6px;border:1px solid #ccc}
+button:hover{background:#b71c1c}
 </style>
 </head>
 
 <body>
 
-<div class="navbar">🎯 ตรวจหวย</div>
+<div class="navbar">🎯 ตรวจหวย PRO</div>
 
 <div class="container">
 
@@ -31,7 +32,7 @@ input{padding:10px;width:60%}
 </div>
 
 <div class="card">
-<input id="num">
+<input id="num" placeholder="กรอกเลข">
 <button onclick="check()">ตรวจ</button>
 <p id="result"></p>
 </div>
@@ -40,7 +41,7 @@ input{padding:10px;width:60%}
 
 <script>
 
-// fallback (สำคัญ)
+// fallback
 let data={
 first:"309612",
 last2:"77",
@@ -48,7 +49,7 @@ front3:["355","108"],
 back3:["868","424"]
 };
 
-// render ปลอดภัย
+// render
 function render(date){
 document.getElementById("date").innerText=date;
 document.getElementById("first").innerText=data.first;
@@ -85,6 +86,68 @@ render("งวดล่าสุด (สำรอง)");
 
 loadData();
 
+
+// 🔥 เอฟเฟกต์เว่อ (ไม่ค้าง)
+function bigEffect(type){
+
+const overlay=document.createElement("div");
+overlay.style.position="fixed";
+overlay.style.top=0;
+overlay.style.left=0;
+overlay.style.width="100%";
+overlay.style.height="100%";
+overlay.style.pointerEvents="none";
+overlay.style.zIndex=9999;
+document.body.appendChild(overlay);
+
+// 🎉 emoji set
+let emojiWin=["🎉","💰","🔥","🎆","🥳"];
+let emojiLose=["😂","😭","💀","❌","🤣"];
+
+let emoji = type==="win" ? emojiWin : emojiLose;
+
+// ยิง 150 ชิ้น
+for(let i=0;i<150;i++){
+let el=document.createElement("div");
+el.innerText=emoji[Math.floor(Math.random()*emoji.length)];
+el.style.position="absolute";
+el.style.fontSize=(Math.random()*40+20)+"px";
+el.style.left=Math.random()*100+"%";
+el.style.top="-50px";
+el.style.transition="all 2s ease-out";
+
+overlay.appendChild(el);
+
+setTimeout(()=>{
+el.style.top="100%";
+el.style.transform=`rotate(${Math.random()*720}deg)`;
+},50);
+}
+
+// 💥 ระเบิดกลางจอ
+let boom=document.createElement("div");
+boom.innerText= type==="win" ? "🎆💥🎆" : "💀💥💀";
+boom.style.position="absolute";
+boom.style.top="40%";
+boom.style.left="50%";
+boom.style.transform="translate(-50%,-50%) scale(1)";
+boom.style.fontSize="80px";
+boom.style.transition="all 0.5s ease";
+
+overlay.appendChild(boom);
+
+setTimeout(()=>{
+boom.style.transform="translate(-50%,-50%) scale(2)";
+},100);
+
+// 🧹 ลบหลังจบ
+setTimeout(()=>{
+overlay.remove();
+},2200);
+
+}
+
+
 // ตรวจหวย
 function check(){
 let num=document.getElementById("num").value;
@@ -97,18 +160,23 @@ return;
 
 if(num===data.first){
 result.innerText="🎉 รางวัลที่ 1";
+bigEffect("win");
 }
 else if(num.slice(-2)===data.last2){
 result.innerText="🎊 เลขท้าย 2 ตัว";
+bigEffect("win");
 }
 else if(data.front3.includes(num.slice(-3))){
 result.innerText="🎉 หน้า 3 ตัว";
+bigEffect("win");
 }
 else if(data.back3.includes(num.slice(-3))){
 result.innerText="🎉 ท้าย 3 ตัว";
+bigEffect("win");
 }
 else{
 result.innerText="❌ ไม่ถูกรางวัล";
+bigEffect("lose");
 }
 }
 
