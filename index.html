@@ -1,224 +1,95 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>ตรวจหวย + ดวงรายวัน</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap" rel="stylesheet">
-
-<style>
-body{
-  font-family:'Prompt', sans-serif;
-  margin:0;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
-  color:#333;
-}
-
-.navbar{
-  background:#111;
-  color:white;
-  padding:15px 25px;
-  display:flex;
-  justify-content:space-between;
-}
-
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:20px;
-}
-
-.card{
-  background:white;
-  border-radius:14px;
-  padding:20px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.15);
-}
-
-.big{
-  font-size:42px;
-  color:#e53935;
-  font-weight:bold;
-  text-align:center;
-}
-
-.row{
-  display:flex;
-  justify-content:space-around;
-  margin-top:15px;
-}
-
-input, select{
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  width:70%;
-}
-
-button{
-  padding:10px 20px;
-  background:#e53935;
-  color:white;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#b71c1c;
-}
-
-.horo-box{
-  margin-top:15px;
-  padding:15px;
-  border-radius:10px;
-  background:#ffe0b2;
-  font-weight:bold;
-  text-align:center;
-}
-
-@media(max-width:768px){
-  .container{
-    grid-template-columns:1fr;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<div class="navbar">
-  <div>🎯 เว็บตรวจหวย</div>
-  <div>ตรวจหวย | ดวงรายวัน</div>
-</div>
-
-<div class="container">
-
-  <!-- LEFT -->
-  <div>
-
-    <div class="card">
-      <h2>ผลสลากกินแบ่งรัฐบาล</h2>
-      <p id="date">กำลังโหลด...</p>
-
-      <div id="first" class="big">------</div>
-
-      <div class="row">
-        <div>
-          <p>หน้า 3 ตัว</p>
-          <p id="front3">---</p>
-        </div>
-        <div>
-          <p>ท้าย 3 ตัว</p>
-          <p id="back3">---</p>
-        </div>
-        <div>
-          <p>ท้าย 2 ตัว</p>
-          <p id="last2">--</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>🍀 ตรวจหวย</h3>
-      <input id="num" placeholder="กรอกเลข 2-6 หลัก">
-      <br><br>
-      <button onclick="check()">ตรวจ</button>
-      <p id="result"></p>
-    </div>
-
-  </div>
-
-  <!-- RIGHT -->
-  <div class="card">
-    <h3>🔮 ดวงประจำวัน</h3>
-
-    <select id="day">
-      <option>จันทร์</option>
-      <option>อังคาร</option>
-      <option>พุธ</option>
-      <option>พฤหัส</option>
-      <option>ศุกร์</option>
-      <option>เสาร์</option>
-      <option>อาทิตย์</option>
-    </select>
-
-    <br><br>
-    <button onclick="getHoro()">ดูดวง</button>
-
-    <div id="horo" class="horo-box">เลือกวันเพื่อดูดวง</div>
-  </div>
-
-</div>
-
 <script>
 
-// 🔮 ดวงรายวัน
-const horoData = {
-  "จันทร์":["มีโชคลาภ","ระวังคำพูด","การเงินดี","ได้ข่าวดี"],
-  "อังคาร":["งานก้าวหน้า","มีโชค","เงินเข้า","ระวังสุขภาพ"],
-  "พุธ":["ความรักดี","ลาภลอย","งานนิ่ง","โชคเล็กๆ"],
-  "พฤหัส":["ผู้ใหญ่ช่วย","เงินมา","ข่าวดี","งานดี"],
-  "ศุกร์":["เสน่ห์แรง","โชคมา","เงินดี","มีคนคิดถึง"],
-  "เสาร์":["เหนื่อยแต่คุ้ม","โชคปลายวัน","เงินเข้า","ระวังเครียด"],
-  "อาทิตย์":["สดใส","โชคดี","ได้เดินทาง","มีคนช่วย"]
-};
+// ===============================
+// 🔥 CONFIG
+// ===============================
+const API_LIST = [
+  "https://lotto.api.rayriffy.com/latest",
+  "https://api.allorigins.win/raw?url=https://lotto.api.rayriffy.com/latest"
+];
 
-function getTodaySeed(){
-  return new Date().getDate();
-}
-
-function getHoro(){
-  let day=document.getElementById("day").value;
-  let list=horoData[day];
-  let index=getTodaySeed()%list.length;
-  document.getElementById("horo").innerText=list[index];
-}
-
-// 🎯 fallback (สำคัญมาก)
-let data={
+// fallback (สำรอง)
+let data = {
   first:"309612",
   last2:"77",
   front3:["355","108"],
   back3:["868","424"]
 };
 
-// โหลดข้อมูลจริง
-async function loadData(){
-  try{
-    const res=await fetch("https://lotto.api.rayriffy.com/latest");
-
-    if(!res.ok) throw new Error();
-
-    const json=await res.json();
-    let d=json.response;
-
-    if(!d) throw new Error();
-
-    data.first=d.prizes.find(p=>p.id===1).number;
-    data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว").number;
-    data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number);
-    data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number);
-
-    document.getElementById("date").innerText=d.date;
-
-  }catch(e){
-    document.getElementById("date").innerText="งวดล่าสุด (สำรอง)";
-  }
-
-  // 🔥 สำคัญ: แสดงผลทุกกรณี
-  document.getElementById("first").innerText=data.first;
-  document.getElementById("last2").innerText=data.last2;
-  document.getElementById("front3").innerText=data.front3.join(" , ");
-  document.getElementById("back3").innerText=data.back3.join(" , ");
+// ===============================
+// 🔥 LOAD DATA PRO VERSION
+// ===============================
+async function fetchWithTimeout(url, timeout = 5000) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), timeout)
+    )
+  ]);
 }
 
-loadData();
+async function loadData(){
 
-// ตรวจหวย
+  // 👉 1. ลองโหลดจาก cache ก่อน
+  let cache = localStorage.getItem("lottoData");
+  if(cache){
+    let c = JSON.parse(cache);
+    data = c;
+    renderData("แคชล่าสุด");
+  }
+
+  // 👉 2. ไล่ยิง API ทีละตัว
+  for(let url of API_LIST){
+    try{
+      const res = await fetchWithTimeout(url);
+
+      if(!res.ok) throw new Error();
+
+      const json = await res.json();
+      let d = json.response;
+
+      if(!d) throw new Error();
+
+      data.first = d.prizes.find(p=>p.id===1).number;
+      data.last2 = d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว").number;
+
+      data.front3 = d.runningNumbers
+        .filter(x=>x.prize.includes("เลขหน้า"))
+        .map(x=>x.number);
+
+      data.back3 = d.runningNumbers
+        .filter(x=>x.prize.includes("เลขท้าย 3 ตัว"))
+        .map(x=>x.number);
+
+      // 👉 save cache
+      localStorage.setItem("lottoData", JSON.stringify(data));
+
+      renderData(d.date);
+      return;
+
+    }catch(e){
+      console.log("API ล้ม:", url);
+    }
+  }
+
+  // 👉 3. ถ้าล้มหมด
+  renderData("งวดล่าสุด (fallback)");
+}
+
+// ===============================
+// 🎯 RENDER
+// ===============================
+function renderData(dateText){
+  document.getElementById("date").innerText = dateText;
+  document.getElementById("first").innerText = data.first;
+  document.getElementById("last2").innerText = data.last2;
+  document.getElementById("front3").innerText = data.front3.join(" , ");
+  document.getElementById("back3").innerText = data.back3.join(" , ");
+}
+
+// ===============================
+// 🔍 CHECK
+// ===============================
 function check(){
   let num=document.getElementById("num").value;
   let result=document.getElementById("result");
@@ -250,7 +121,8 @@ function check(){
   }
 }
 
-</script>
+// ===============================
+loadData();
+// ===============================
 
-</body>
-</html>
+</script>
