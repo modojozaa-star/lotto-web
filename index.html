@@ -1,3 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ตรวจหวย</title>
+
+<style>
+body{
+  font-family:sans-serif;
+  background:#f5f5f5;
+  text-align:center;
+}
+
+.container{
+  max-width:800px;
+  margin:auto;
+}
+
+.result-box{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.big-number{
+  font-size:40px;
+  color:red;
+  font-weight:bold;
+}
+
+.row{
+  display:flex;
+  justify-content:space-around;
+  margin-top:15px;
+  flex-wrap:wrap;
+}
+
+.check-box{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+input{
+  padding:10px;
+  width:60%;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button{
+  padding:10px 20px;
+  background:red;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#b71c1c;
+}
+</style>
+</head>
+
 <body>
 
 <div class="container">
@@ -5,7 +73,7 @@
   <h1>ตรวจสลากกินแบ่งรัฐบาล</h1>
   <h3 id="date">กำลังโหลด...</h3>
 
-  <!-- 🏆 รางวัล -->
+  <!-- 🏆 ผลรางวัล -->
   <div class="result-box">
     <h2>รางวัลที่ 1</h2>
     <div id="first" class="big-number">------</div>
@@ -32,75 +100,97 @@
   <div class="check-box">
     <h3>🍀 ตรวจหวย</h3>
     <input id="num" placeholder="กรอกเลข 2-6 หลัก">
+    <br><br>
     <button onclick="check()">ตรวจ</button>
     <p id="result"></p>
   </div>
 
 </div>
 
-<style>
-body{font-family:sans-serif;background:#f5f5f5;text-align:center;}
-.container{max-width:800px;margin:auto;}
-.result-box{background:white;padding:20px;border-radius:12px;margin-bottom:20px;}
-.big-number{font-size:40px;color:red;font-weight:bold;}
-.row{display:flex;justify-content:space-around;margin-top:15px;}
-.check-box{background:white;padding:20px;border-radius:12px;}
-input{padding:10px;width:60%;}
-button{padding:10px 20px;background:red;color:white;border:none;border-radius:8px;}
-</style>
+<script>
 
-  <script>
 let data = {};
 
+// โหลดข้อมูลหวย
 async function loadData() {
-  const res = await fetch("https://lotto.api.rayriffy.com/latest");
-  const json = await res.json();
+  try {
+    const res = await fetch("https://lotto.api.rayriffy.com/latest");
+    const json = await res.json();
 
-  let d = json.response;
+    let d = json.response;
 
-  // วันที่
-  document.getElementById("date").innerHTML = d.date;
+    // วันที่
+    document.getElementById("date").innerHTML = d.date;
 
-  // รางวัลที่ 1
-  data.first = d.prizes.find(p => p.id === 1).number;
-  document.getElementById("first").innerHTML = data.first;
+    // รางวัลที่ 1
+    data.first = d.prizes.find(p => p.id === 1).number;
+    document.getElementById("first").innerHTML = data.first;
 
-  // เลขท้าย 2 ตัว
-  data.last2 = d.runningNumbers.find(x => x.prize === "เลขท้าย 2 ตัว").number;
-  document.getElementById("last2").innerHTML = data.last2;
+    // เลขท้าย 2 ตัว
+    data.last2 = d.runningNumbers.find(x => x.prize === "เลขท้าย 2 ตัว").number;
+    document.getElementById("last2").innerHTML = data.last2;
 
-  // เลข 3 ตัว
-  let front = d.runningNumbers.filter(x => x.prize.includes("เลขหน้า")).map(x=>x.number);
-  let back = d.runningNumbers.filter(x => x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number);
+    // เลข 3 ตัว
+    let front = d.runningNumbers
+      .filter(x => x.prize.includes("เลขหน้า"))
+      .map(x => x.number);
 
-  data.last3 = [...front, ...back];
+    let back = d.runningNumbers
+      .filter(x => x.prize.includes("เลขท้าย 3 ตัว"))
+      .map(x => x.number);
 
-  document.getElementById("front3").innerHTML = front.join(" , ");
-  document.getElementById("back3").innerHTML = back.join(" , ");
+    data.last3 = [...front, ...back];
+
+    document.getElementById("front3").innerHTML = front.join(" , ");
+    document.getElementById("back3").innerHTML = back.join(" , ");
+
+  } catch (e) {
+    console.log("โหลดข้อมูลไม่ได้", e);
+    document.getElementById("date").innerHTML = "โหลดข้อมูลไม่สำเร็จ";
+  }
 }
 
 loadData();
+
 
 // ตรวจหวย
 function check(){
   let num = document.getElementById("num").value;
 
-  if(num.length < 2 || num.length > 6){
-    result.innerHTML = "⚠️ กรอก 2-6 หลัก";
+  // เช็คตัวเลข
+  if(!/^\d+$/.test(num)){
+    document.getElementById("result").innerHTML = "⚠️ กรอกตัวเลขเท่านั้น";
     return;
   }
 
-  if(num === data.first){
-    result.innerHTML = "🎉 ถูกรางวัลที่ 1";
+  // เช็คข้อมูลโหลด
+  if(!data.first){
+    document.getElementById("result").innerHTML = "⏳ กำลังโหลดข้อมูล...";
+    return;
+  }
+
+  // เช็คจำนวนหลัก
+  if(num.length < 2 || num.length > 6){
+    document.getElementById("result").innerHTML = "⚠️ กรอก 2-6 หลัก";
+    return;
+  }
+
+  // ตรวจรางวัล
+  if(num.length === 6 && num === data.first){
+    document.getElementById("result").innerHTML = "🎉 ถูกรางวัลที่ 1";
   }
   else if(num.slice(-2) === data.last2){
-    result.innerHTML = "🎊 ถูกเลขท้าย 2 ตัว";
+    document.getElementById("result").innerHTML = "🎊 ถูกเลขท้าย 2 ตัว";
   }
   else if(data.last3.includes(num.slice(-3))){
-    result.innerHTML = "🎉 ถูกเลข 3 ตัว";
+    document.getElementById("result").innerHTML = "🎉 ถูกเลข 3 ตัว";
   }
   else{
-    result.innerHTML = "❌ ไม่ถูกรางวัล";
+    document.getElementById("result").innerHTML = "❌ ไม่ถูกรางวัล";
   }
 }
+
 </script>
+
+</body>
+</html>
