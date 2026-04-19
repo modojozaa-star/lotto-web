@@ -11,7 +11,6 @@ margin:0;
 font-family:sans-serif;
 background:#0f2a5a;
 color:#fff;
-overflow-x:hidden;
 }
 
 .navbar{
@@ -64,40 +63,6 @@ font-weight:bold;
 text-align:center;
 }
 
-/* เอฟเฟค overlay */
-#effect{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-pointer-events:none;
-display:none;
-z-index:9999;
-}
-
-/* ข้อความใหญ่ */
-.effect-text{
-position:absolute;
-top:40%;
-width:100%;
-text-align:center;
-font-size:60px;
-font-weight:bold;
-}
-
-/* พลุ */
-.fire{
-position:absolute;
-font-size:40px;
-animation:boom 1s ease-out forwards;
-}
-
-@keyframes boom{
-0%{transform:scale(0);opacity:1}
-100%{transform:scale(2);opacity:0}
-}
-
 /* จอสั่น */
 .shake{
 animation:shake 0.3s;
@@ -105,12 +70,11 @@ animation:shake 0.3s;
 
 @keyframes shake{
 0%{transform:translate(0)}
-25%{transform:translate(5px,-5px)}
-50%{transform:translate(-5px,5px)}
-75%{transform:translate(5px,5px)}
+25%{transform:translate(6px,-6px)}
+50%{transform:translate(-6px,6px)}
+75%{transform:translate(6px,6px)}
 100%{transform:translate(0)}
 }
-
 </style>
 </head>
 
@@ -137,14 +101,12 @@ animation:shake 0.3s;
 
 </div>
 
-<div id="effect"></div>
-
 <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
-<audio id="loseSound" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-laugh-404.mp3"></audio>
+<audio id="loseSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3"></audio>
 
 <script>
 
-// fallback
+// 🔹 fallback กัน API ล่ม
 let data={
 first:"309612",
 last2:"77",
@@ -160,7 +122,7 @@ document.getElementById("back3").innerText=data.back3.join(",");
 document.getElementById("last2").innerText=data.last2;
 }
 
-// โหลด API
+// 🔹 โหลด API จริง
 async function loadData(){
 try{
 let res=await fetch("https://lotto.api.rayriffy.com/latest");
@@ -181,52 +143,156 @@ render("งวดล่าสุด");
 
 loadData();
 
-// 🎆 ชนะ
+
+// 🎆 เอฟเฟคชนะ (พลุ)
 function winEffect(){
-let e=document.getElementById("effect");
-e.innerHTML='<div class="effect-text">🎉 เลี้ยงด้วยน๊าา 🎉</div>';
-e.style.display="block";
 
-// เสียง
-document.getElementById("winSound").play();
+let canvas=document.createElement("canvas");
+let ctx=canvas.getContext("2d");
 
-// พลุ
-for(let i=0;i<30;i++){
-let f=document.createElement("div");
-f.className="fire";
-f.innerText="🎆";
-f.style.left=Math.random()*100+"%";
-f.style.top=Math.random()*80+"%";
-e.appendChild(f);
+canvas.style.position="fixed";
+canvas.style.top=0;
+canvas.style.left=0;
+canvas.style.width="100%";
+canvas.style.height="100%";
+canvas.style.zIndex=1;
+canvas.style.pointerEvents="none";
+
+document.body.appendChild(canvas);
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+function fire(){
+let x=Math.random()*canvas.width;
+let y=Math.random()*canvas.height*0.5;
+
+for(let i=0;i<100;i++){
+particles.push({
+x,y,
+angle:Math.random()*Math.PI*2,
+speed:Math.random()*5+2,
+life:80,
+color:`hsl(${Math.random()*360},100%,50%)`
+});
+}
 }
 
-// จอสั่น
+for(let i=0;i<5;i++){
+setTimeout(fire,i*250);
+}
+
+function animate(){
+ctx.fillStyle="rgba(15,42,90,0.2)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+particles.forEach(p=>{
+p.x+=Math.cos(p.angle)*p.speed;
+p.y+=Math.sin(p.angle)*p.speed;
+p.life--;
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,2,0,Math.PI*2);
+ctx.fillStyle=p.color;
+ctx.fill();
+});
+
+particles=particles.filter(p=>p.life>0);
+
+if(particles.length>0) requestAnimationFrame(animate);
+}
+
+animate();
+
+document.getElementById("winSound").play();
 document.body.classList.add("shake");
 setTimeout(()=>document.body.classList.remove("shake"),500);
 
-setTimeout(()=>{e.style.display="none";e.innerHTML=""},2000);
+setTimeout(()=>canvas.remove(),2500);
 }
 
-// 😂 แพ้
+
+// 💥 เอฟเฟคแพ้
 function loseEffect(){
-let e=document.getElementById("effect");
-e.innerHTML='<div class="effect-text">😏 สมน้ำหน้า กินมาม่าไปก่อน</div>';
-e.style.display="block";
+
+let canvas=document.createElement("canvas");
+let ctx=canvas.getContext("2d");
+
+canvas.style.position="fixed";
+canvas.style.top=0;
+canvas.style.left=0;
+canvas.style.width="100%";
+canvas.style.height="100%";
+canvas.style.zIndex=1;
+canvas.style.pointerEvents="none";
+
+document.body.appendChild(canvas);
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+let x=canvas.width/2;
+let y=canvas.height/2;
+
+for(let i=0;i<120;i++){
+particles.push({
+x,y,
+angle:Math.random()*Math.PI*2,
+speed:Math.random()*6+3,
+life:70,
+color:["#ff0000","#ff3b3b","#ff8800","#ffaa00"][Math.floor(Math.random()*4)]
+});
+}
+
+function animate(){
+ctx.fillStyle="rgba(15,42,90,0.3)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+particles.forEach(p=>{
+p.x+=Math.cos(p.angle)*p.speed;
+p.y+=Math.sin(p.angle)*p.speed;
+p.life--;
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,3,0,Math.PI*2);
+ctx.fillStyle=p.color;
+ctx.fill();
+});
+
+particles=particles.filter(p=>p.life>0);
+
+if(particles.length>0) requestAnimationFrame(animate);
+}
+
+animate();
 
 document.getElementById("loseSound").play();
-
 document.body.classList.add("shake");
-setTimeout(()=>document.body.classList.remove("shake"),500);
+setTimeout(()=>document.body.classList.remove("shake"),600);
 
-setTimeout(()=>{e.style.display="none";e.innerHTML=""},2000);
+setTimeout(()=>canvas.remove(),2000);
 }
 
-// ตรวจหวย
+
+// 🔍 ตรวจหวย
 function check(){
+
 let num=document.getElementById("num").value.trim();
 let result=document.getElementById("result");
 
-if(!num){result.innerText="กรอกเลขก่อน";return;}
+if(!num){
+result.innerText="กรอกเลขก่อน";
+return;
+}
+
+if(num.length<2 || num.length>6){
+result.innerText="กรอก 2-6 หลัก";
+return;
+}
 
 if(num===data.first){
 result.innerText="🎉 เลี้ยงด้วยน๊าา";
