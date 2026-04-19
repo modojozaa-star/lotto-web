@@ -7,13 +7,12 @@
 
 <style>
 body{font-family:sans-serif;background:#0f1f4b;margin:0;color:#fff}
-.navbar{background:#000;padding:15px;font-size:18px}
+.navbar{background:#000;padding:15px}
 .container{max-width:900px;margin:auto;padding:20px}
 .card{background:#fff;color:#000;padding:20px;border-radius:12px;margin-bottom:20px}
 .big{font-size:48px;color:red;text-align:center;font-weight:bold}
 button{padding:10px 20px;background:red;color:white;border:none;border-radius:8px;cursor:pointer}
 input{padding:10px;width:60%;border-radius:6px;border:1px solid #ccc}
-button:hover{background:#b71c1c}
 </style>
 </head>
 
@@ -33,15 +32,11 @@ button:hover{background:#b71c1c}
 
 <div class="card">
 <input id="num" placeholder="กรอกเลข">
-<button onclick="spinCheck()">ตรวจ</button>
+<button onclick="check()">ตรวจ</button>
 <p id="result"></p>
 </div>
 
 </div>
-
-<!-- 🔊 เสียง -->
-<audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
-<audio id="loseSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3"></audio>
 
 <script>
 
@@ -53,7 +48,7 @@ front3:["355","108"],
 back3:["868","424"]
 };
 
-// render
+// render (ไม่มีคำว่าสำรอง)
 function render(date){
 document.getElementById("date").innerText=date;
 document.getElementById("first").innerText=data.first;
@@ -62,7 +57,7 @@ document.getElementById("back3").innerText=data.back3.join(",");
 document.getElementById("last2").innerText=data.last2;
 }
 
-// แสดงก่อน
+// แสดงก่อนทันที
 render("งวดล่าสุด");
 
 // โหลด API
@@ -81,33 +76,15 @@ data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 
 render(d.date);
 
 }catch(e){
-render("งวดล่าสุด");
+render("งวดล่าสุด"); // ไม่มีคำว่าสำรอง
 }
 }
 
 loadData();
 
 
-// 🎰 หมุนเลข
-function spinCheck(){
-let display=document.getElementById("first");
-let count=0;
-
-let spin=setInterval(()=>{
-display.innerText=Math.floor(Math.random()*999999).toString().padStart(6,"0");
-count++;
-
-if(count>15){
-clearInterval(spin);
-display.innerText=data.first;
-check();
-}
-},80);
-}
-
-
-// 🎆 เอฟเฟกต์
-function effect(type){
+// 🎆 เอฟเฟกต์ "ถูก"
+function winEffect(){
 
 const overlay=document.createElement("div");
 overlay.style.position="fixed";
@@ -115,21 +92,18 @@ overlay.style.top=0;
 overlay.style.left=0;
 overlay.style.width="100%";
 overlay.style.height="100%";
-overlay.style.pointerEvents="none";
 overlay.style.zIndex=9999;
+overlay.style.pointerEvents="none";
 document.body.appendChild(overlay);
 
-let emoji = type==="win" ? ["🎉","💰","🔥","🎆","🥳"] : ["😂","😭","💀","❌","🤣"];
-
-for(let i=0;i<120;i++){
+for(let i=0;i<200;i++){
 let el=document.createElement("div");
-el.innerText=emoji[Math.floor(Math.random()*emoji.length)];
+el.innerText="🎆";
 el.style.position="absolute";
 el.style.fontSize=(Math.random()*40+20)+"px";
 el.style.left=Math.random()*100+"%";
 el.style.top="-50px";
 el.style.transition="all 2s ease-out";
-
 overlay.appendChild(el);
 
 setTimeout(()=>{
@@ -138,8 +112,40 @@ el.style.transform=`rotate(${Math.random()*720}deg)`;
 },50);
 }
 
-// ลบ
-setTimeout(()=>overlay.remove(),2200);
+setTimeout(()=>overlay.remove(),2000);
+}
+
+
+// 😂 เอฟเฟกต์ "ไม่ถูก"
+function loseEffect(){
+
+const overlay=document.createElement("div");
+overlay.style.position="fixed";
+overlay.style.top=0;
+overlay.style.left=0;
+overlay.style.width="100%";
+overlay.style.height="100%";
+overlay.style.zIndex=9999;
+overlay.style.pointerEvents="none";
+document.body.appendChild(overlay);
+
+for(let i=0;i<120;i++){
+let el=document.createElement("div");
+el.innerText="😂";
+el.style.position="absolute";
+el.style.fontSize=(Math.random()*50+20)+"px";
+el.style.left=Math.random()*100+"%";
+el.style.top=Math.random()*100+"%";
+el.style.transition="all 0.5s";
+
+overlay.appendChild(el);
+
+setTimeout(()=>{
+el.style.transform=`scale(2) rotate(${Math.random()*360}deg)`;
+},100);
+}
+
+setTimeout(()=>overlay.remove(),1500);
 }
 
 
@@ -156,28 +162,23 @@ return;
 
 if(num===data.first){
 result.innerText="🎉 รางวัลที่ 1";
-document.getElementById("winSound").play();
-effect("win");
+winEffect();
 }
 else if(num.slice(-2)===data.last2){
 result.innerText="🎊 เลขท้าย 2 ตัว";
-document.getElementById("winSound").play();
-effect("win");
+winEffect();
 }
 else if(data.front3.includes(num.slice(-3))){
 result.innerText="🎉 หน้า 3 ตัว";
-document.getElementById("winSound").play();
-effect("win");
+winEffect();
 }
 else if(data.back3.includes(num.slice(-3))){
 result.innerText="🎉 ท้าย 3 ตัว";
-document.getElementById("winSound").play();
-effect("win");
+winEffect();
 }
 else{
 result.innerText="❌ ไม่ถูกรางวัล";
-document.getElementById("loseSound").play();
-effect("lose");
+loseEffect();
 }
 
 }
