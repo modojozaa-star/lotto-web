@@ -23,6 +23,7 @@ button{padding:10px 20px;background:#d32f2f;color:white;border:none;border-radiu
 <script>
 let data = {};
 
+// โหลดข้อมูล
 async function loadData() {
   try {
     const res = await fetch("https://lotto.api.rayriffy.com/latest");
@@ -30,7 +31,9 @@ async function loadData() {
 
     data.first = json.response.prizes[0].number;
     data.last2 = json.response.runningNumbers.find(x => x.prize === "เลขท้าย 2 ตัว").number;
-    data.last3 = json.response.runningNumbers.filter(x => x.prize.includes("3 ตัว")).map(x => x.number);
+    data.last3 = json.response.runningNumbers
+      .filter(x => x.prize.includes("3 ตัว"))
+      .map(x => x.number);
 
   } catch (e) {
     console.log("โหลดไม่ได้", e);
@@ -39,28 +42,33 @@ async function loadData() {
 
 loadData();
 
+// ฟังก์ชันตรวจ
 function check(){
+  console.log("กดปุ่มแล้ว"); // debug
+
   let num = document.getElementById("num").value;
 
+  if(!data.first){
+    document.getElementById("result").innerHTML = "⏳ กำลังโหลดข้อมูล...";
+    return;
+  }
+
   if(num.length !== 6){
-    result.innerHTML = "⚠️ กรุณากรอก 6 หลัก";
+    document.getElementById("result").innerHTML = "⚠️ กรอก 6 หลัก";
     return;
   }
 
   if(num === data.first){
-    result.innerHTML = "🎉 ถูกรางวัลที่ 1";
+    document.getElementById("result").innerHTML = "🎉 ถูกรางวัลที่ 1";
   } 
   else if(num.slice(-2) === data.last2){
-    result.innerHTML = "🎊 ถูกเลขท้าย 2 ตัว";
+    document.getElementById("result").innerHTML = "🎊 ถูกเลขท้าย 2 ตัว";
   }
   else if(data.last3.includes(num.slice(-3))){
-    result.innerHTML = "🎉 ถูกเลขท้าย 3 ตัว";
+    document.getElementById("result").innerHTML = "🎉 ถูกเลขท้าย 3 ตัว";
   }
   else{
-    result.innerHTML = "❌ ไม่ถูกรางวัล";
+    document.getElementById("result").innerHTML = "❌ ไม่ถูกรางวัล";
   }
 }
 </script>
-
-</body>
-</html>
