@@ -2,19 +2,19 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ตรวจหวย PRO 888</title>
+<title>ตรวจหวย 888</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
 margin:0;
 font-family:sans-serif;
-background:#eef1f4;
+background:#0f2a5a;
+color:#fff;
 }
 
 .navbar{
-background:#111;
-color:#fff;
+background:#000;
 padding:15px;
 font-weight:bold;
 }
@@ -23,65 +23,47 @@ font-weight:bold;
 max-width:900px;
 margin:auto;
 padding:20px;
-position:relative;
-z-index:2; /* 🔥 UI อยู่บนสุด */
 }
 
 .card{
 background:#fff;
-padding:25px;
-border-radius:16px;
+color:#000;
+padding:20px;
+border-radius:12px;
 margin-bottom:20px;
-box-shadow:0 6px 20px rgba(0,0,0,0.08);
 }
 
 .big{
-font-size:48px;
-color:#ff2d2d;
-font-weight:bold;
+font-size:40px;
+color:red;
 text-align:center;
+font-weight:bold;
 }
 
 input{
-padding:12px;
-width:65%;
-border-radius:10px;
+padding:10px;
+width:60%;
+border-radius:8px;
 border:1px solid #ccc;
-font-size:16px;
 }
 
 button{
-padding:12px 22px;
-background:#e60000;
+padding:10px 20px;
+background:red;
 color:white;
 border:none;
-border-radius:10px;
+border-radius:8px;
 cursor:pointer;
-font-weight:bold;
+}
+
+button:hover{
+background:#b71c1c;
 }
 
 #result{
-margin-top:20px;
-font-size:34px;
+margin-top:10px;
+font-size:20px;
 font-weight:bold;
-text-align:center;
-padding:15px;
-border-radius:12px;
-background:#ffffffcc; /* 🔥 กันเอฟเฟกต์ทับ */
-}
-
-.win{color:#00c853;}
-.lose{color:#d50000;}
-
-/* 🎆 layer เอฟเฟกต์ */
-#effectCanvas{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-z-index:1; /* 🔥 อยู่หลัง UI */
-pointer-events:none;
 }
 </style>
 </head>
@@ -90,20 +72,19 @@ pointer-events:none;
 
 <div class="navbar">🎯 ตรวจหวย PRO MAX</div>
 
-<canvas id="effectCanvas"></canvas>
-
 <div class="container">
 
 <div class="card">
 <h3 id="date">งวดล่าสุด</h3>
-<div id="first" class="big">------</div>
-<p>หน้า 3 ตัว: <span id="front3"></span></p>
-<p>ท้าย 3 ตัว: <span id="back3"></span></p>
-<p>ท้าย 2 ตัว: <span id="last2"></span></p>
+<div id="first" class="big">309612</div>
+
+<p>หน้า 3 ตัว: <span id="front3">355,108</span></p>
+<p>ท้าย 3 ตัว: <span id="back3">868,424</span></p>
+<p>ท้าย 2 ตัว: <span id="last2">77</span></p>
 </div>
 
 <div class="card">
-<input id="num" placeholder="กรอกเลข">
+<input id="num" placeholder="กรอกเลข 2-6 หลัก">
 <button onclick="check()">ตรวจ</button>
 <p id="result"></p>
 </div>
@@ -112,15 +93,15 @@ pointer-events:none;
 
 <script>
 
-// fallback
-let data={
-first:"309612",
-last2:"77",
-front3:["355","108"],
-back3:["868","424"]
+// 🔹 fallback (มีไว้กัน API ล่ม)
+let data = {
+first: "309612",
+last2: "77",
+front3: ["355","108"],
+back3: ["868","424"]
 };
 
-// render (ปลอดภัย 100%)
+// 🔹 render (ใช้แบบปลอดภัย)
 function render(date){
 
 document.getElementById("date").innerText = date;
@@ -134,10 +115,7 @@ document.getElementById("back3").innerText = data.back3.join(",");
 document.getElementById("last2").innerText = data.last2;
 }
 
-// 🔥 แสดงทันที (สำคัญมาก)
-render("งวดล่าสุด");
-
-// โหลด API
+// 🔹 โหลด API
 async function loadData(){
 try{
 
@@ -164,91 +142,57 @@ data.back3 = d.runningNumbers
   .filter(x=>x.prize.includes("เลขท้าย 3 ตัว"))
   .map(x=>x.number) || data.back3;
 
-// อัปเดตหน้าเว็บ
+// แสดงผล
 render(d.date);
 
 }catch(e){
-console.log("fallback ทำงาน", e);
+console.log("ใช้ fallback", e);
+render("งวดล่าสุด");
 }
 }
 
-loadData();
-
-// 🎆 เอฟเฟกต์ (อยู่หลัง)
-function megaWinEffect(){
-
-let canvas=document.getElementById("effectCanvas");
-let ctx=canvas.getContext("2d");
-
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-let particles=[];
-
-// สร้างพลุ
-for(let i=0;i<150;i++){
-particles.push({
-x:canvas.width/2,
-y:canvas.height/2,
-angle:Math.random()*Math.PI*2,
-speed:Math.random()*5+2,
-life:80,
-color:`hsl(${Math.random()*360},100%,50%)`
-});
-}
-
-function animate(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-particles.forEach(p=>{
-p.x+=Math.cos(p.angle)*p.speed;
-p.y+=Math.sin(p.angle)*p.speed;
-p.life--;
-
-ctx.beginPath();
-ctx.arc(p.x,p.y,2,0,Math.PI*2);
-ctx.fillStyle=p.color;
-ctx.fill();
-});
-
-particles=particles.filter(p=>p.life>0);
-
-if(particles.length>0){
-requestAnimationFrame(animate);
-}
-}
-
-animate();
-}
-
-// ตรวจหวย
+// 🔹 ตรวจหวย
 function check(){
 
-let num=numEl.value;
-let result=resultEl;
+let num = document.getElementById("num").value.trim();
+let result = document.getElementById("result");
 
 if(!num){
-result.innerText="กรอกเลขก่อน";
+result.innerText = "กรอกเลขก่อน";
 return;
 }
 
-if(
-num===data.first ||
-num.slice(-2)===data.last2 ||
-data.front3.includes(num.slice(-3)) ||
-data.back3.includes(num.slice(-3))
-){
-result.className="win";
-result.innerText="🎉 เลี้ยงด้วยน๊าา 🎉";
-megaWinEffect();
-}
-else{
-result.className="lose";
-result.innerText="😂 สมน้ำหน้า กินมาม่าไปก่อน 😂";
+if(!/^\d+$/.test(num)){
+result.innerText = "กรอกตัวเลขเท่านั้น";
+return;
 }
 
+if(num.length < 2 || num.length > 6){
+result.innerText = "กรอก 2-6 หลัก";
+return;
 }
+
+if(num.length === 6 && num === data.first){
+result.innerText = "🎉 เลี้ยงด้วยน๊าา";
+}
+else if(num.slice(-2) === data.last2){
+result.innerText = "🎊 ถูกเลขท้าย 2 ตัว";
+}
+else if(data.front3.includes(num.slice(-3))){
+result.innerText = "🎉 ถูกเลขหน้า 3 ตัว";
+}
+else if(data.back3.includes(num.slice(-3))){
+result.innerText = "🎉 ถูกเลขท้าย 3 ตัว";
+}
+else{
+result.innerText = "😏 สมน้ำหน้า กินมาม่าไปก่อน";
+}
+}
+
+// 🔥 โหลดทันทีตอนเปิด
+render("งวดล่าสุด");
+loadData();
+
 </script>
 
 </body>
