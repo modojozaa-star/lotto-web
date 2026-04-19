@@ -1,111 +1,4 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<title>ตรวจหวย 888</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body{
-margin:0;
-font-family:sans-serif;
-background:#eef1f4;
-}
-
-.navbar{
-background:#111;
-color:#fff;
-padding:15px;
-font-weight:bold;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:#fff;
-padding:25px;
-border-radius:16px;
-margin-bottom:20px;
-box-shadow:0 6px 20px rgba(0,0,0,0.08);
-}
-
-.big{
-font-size:48px;
-color:#ff2d2d;
-font-weight:bold;
-text-align:center;
-}
-
-input{
-padding:12px;
-width:65%;
-border-radius:10px;
-border:1px solid #ccc;
-font-size:16px;
-}
-
-button{
-padding:12px 22px;
-background:#e60000;
-color:white;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-weight:bold;
-}
-
-button:hover{
-background:#b80000;
-}
-
-#result{
-margin-top:20px;
-font-size:34px;
-font-weight:bold;
-text-align:center;
-}
-
-.win{
-color:#00c853;
-}
-
-.lose{
-color:#d50000;
-}
-</style>
-</head>
-
-<body>
-
-<div class="navbar">🎯 ตรวจหวย PRO MAX</div>
-
-<div class="container">
-
-<div class="card">
-<h3 id="date">กำลังโหลด...</h3>
-<div id="first" class="big">------</div>
-<p>หน้า 3 ตัว: <span id="front3">---</span></p>
-<p>ท้าย 3 ตัว: <span id="back3">---</span></p>
-<p>ท้าย 2 ตัว: <span id="last2">--</span></p>
-</div>
-
-<div class="card">
-<input id="num" placeholder="กรอกเลข">
-<button onclick="check()">ตรวจ</button>
-<p id="result"></p>
-</div>
-
-</div>
-
-<audio id="boom" src="https://assets.mixkit.co/sfx/preview/mixkit-explosion-impact-1684.mp3"></audio>
-
-<script>
-
-// fallback
+// fallback (แสดงก่อนเสมอ)
 let data={
 first:"309612",
 last2:"77",
@@ -122,11 +15,20 @@ document.getElementById("back3").innerText=data.back3.join(",");
 document.getElementById("last2").innerText=data.last2;
 }
 
+// 🔥 สำคัญ: แสดง fallback ทันที
+render("งวดล่าสุด");
+
 // โหลด API
 async function loadData(){
 try{
+
 let res=await fetch("https://lotto.api.rayriffy.com/latest");
+
+if(!res.ok) throw "error";
+
 let json=await res.json();
+
+if(!json || !json.response) throw "error";
 
 let d=json.response;
 
@@ -135,158 +37,12 @@ data.last2=d.runningNumbers.find(x=>x.prize==="เลขท้าย 2 ตัว
 data.front3=d.runningNumbers.filter(x=>x.prize.includes("เลขหน้า")).map(x=>x.number)||data.front3;
 data.back3=d.runningNumbers.filter(x=>x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number)||data.back3;
 
+// ✅ อัปเดตใหม่
 render(d.date);
 
 }catch(e){
-render("งวดล่าสุด");
+console.log("ใช้ fallback",e);
 }
 }
 
 loadData();
-
-
-// 🎆 เอฟเฟกต์พลุ (สวยจริง)
-function megaWinEffect(){
-
-let canvas=document.createElement("canvas");
-let ctx=canvas.getContext("2d");
-
-canvas.style.position="fixed";
-canvas.style.top=0;
-canvas.style.left=0;
-canvas.style.width="100%";
-canvas.style.height="100%";
-canvas.style.zIndex=9999;
-
-document.body.appendChild(canvas);
-
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-let rockets=[];
-let particles=[];
-
-for(let i=0;i<6;i++){
-rockets.push({
-x:Math.random()*canvas.width,
-y:canvas.height,
-targetY:Math.random()*canvas.height/2,
-speed:6+Math.random()*2,
-exploded:false
-});
-}
-
-function explode(x,y){
-let colors=["#ff3b3b","#ffd93b","#3bffae","#3bc9ff","#ff3bf0"];
-for(let i=0;i<100;i++){
-particles.push({
-x,y,
-angle:Math.random()*Math.PI*2,
-speed:Math.random()*4+2,
-life:80,
-color:colors[Math.floor(Math.random()*colors.length)]
-});
-}
-}
-
-function animate(){
-
-ctx.fillStyle="rgba(0,0,0,0.2)";
-ctx.fillRect(0,0,canvas.width,canvas.height);
-
-rockets.forEach(r=>{
-if(!r.exploded){
-r.y-=r.speed;
-
-ctx.beginPath();
-ctx.arc(r.x,r.y,3,0,Math.PI*2);
-ctx.fillStyle="#fff";
-ctx.fill();
-
-if(r.y<=r.targetY){
-r.exploded=true;
-explode(r.x,r.y);
-}
-}
-});
-
-particles.forEach(p=>{
-p.x+=Math.cos(p.angle)*p.speed;
-p.y+=Math.sin(p.angle)*p.speed;
-p.life--;
-
-ctx.beginPath();
-ctx.arc(p.x,p.y,2,0,Math.PI*2);
-ctx.fillStyle=p.color;
-ctx.fill();
-});
-
-particles=particles.filter(p=>p.life>0);
-
-requestAnimationFrame(animate);
-}
-
-animate();
-
-// เสียง
-document.getElementById("boom").play();
-
-// ลบเอฟเฟกต์
-setTimeout(()=>{
-canvas.remove();
-},3000);
-}
-
-
-// 😈 แพ้
-function loseEffect(){
-
-let div=document.createElement("div");
-
-div.innerHTML="😂";
-div.style.position="fixed";
-div.style.top="50%";
-div.style.left="50%";
-div.style.transform="translate(-50%,-50%)";
-div.style.fontSize="120px";
-div.style.zIndex=9999;
-
-document.body.appendChild(div);
-
-setTimeout(()=>div.remove(),2000);
-}
-
-
-// 🔍 ตรวจหวย
-function check(){
-
-let num=document.getElementById("num").value;
-let result=document.getElementById("result");
-
-if(!num){
-result.innerText="กรอกเลขก่อน";
-return;
-}
-
-if(
-num===data.first ||
-num.slice(-2)===data.last2 ||
-data.front3.includes(num.slice(-3)) ||
-data.back3.includes(num.slice(-3))
-){
-result.className="win";
-result.innerText="🎉 เลี้ยงด้วยน๊าา 🎉";
-megaWinEffect();
-}
-else{
-result.className="lose";
-result.innerText="😂 สมน้ำหน้า กินมาม่าไปก่อน 😂";
-loseEffect();
-}
-
-}
-
-</script>
-
-</body>
-</html>
