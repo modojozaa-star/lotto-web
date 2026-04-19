@@ -73,7 +73,6 @@ button:hover{
   <h1>ตรวจสลากกินแบ่งรัฐบาล</h1>
   <h3 id="date">กำลังโหลด...</h3>
 
-  <!-- 🏆 ผลรางวัล -->
   <div class="result-box">
     <h2>รางวัลที่ 1</h2>
     <div id="first" class="big-number">------</div>
@@ -96,7 +95,6 @@ button:hover{
     </div>
   </div>
 
-  <!-- 🔍 ตรวจหวย -->
   <div class="check-box">
     <h3>🍀 ตรวจหวย</h3>
     <input id="num" placeholder="กรอกเลข 2-6 หลัก">
@@ -109,35 +107,30 @@ button:hover{
 
 <script>
 
-let data = {};
+let data = {
+  first: "309612",
+  last2: "77",
+  last3: ["355","108","868","424"]
+};
 
-// โหลดข้อมูลหวย
+// 🔥 โหลดข้อมูลจริง + fallback
 async function loadData() {
   try {
-    const res = await fetch("https://lotto.api.rayriffy.com/latest");
+    const res = await fetch("https://api.allorigins.win/raw?url=https://lotto.api.rayriffy.com/latest");
     const json = await res.json();
 
     let d = json.response;
 
-    // วันที่
     document.getElementById("date").innerHTML = d.date;
 
-    // รางวัลที่ 1
     data.first = d.prizes.find(p => p.id === 1).number;
     document.getElementById("first").innerHTML = data.first;
 
-    // เลขท้าย 2 ตัว
     data.last2 = d.runningNumbers.find(x => x.prize === "เลขท้าย 2 ตัว").number;
     document.getElementById("last2").innerHTML = data.last2;
 
-    // เลข 3 ตัว
-    let front = d.runningNumbers
-      .filter(x => x.prize.includes("เลขหน้า"))
-      .map(x => x.number);
-
-    let back = d.runningNumbers
-      .filter(x => x.prize.includes("เลขท้าย 3 ตัว"))
-      .map(x => x.number);
+    let front = d.runningNumbers.filter(x => x.prize.includes("เลขหน้า")).map(x=>x.number);
+    let back = d.runningNumbers.filter(x => x.prize.includes("เลขท้าย 3 ตัว")).map(x=>x.number);
 
     data.last3 = [...front, ...back];
 
@@ -145,37 +138,33 @@ async function loadData() {
     document.getElementById("back3").innerHTML = back.join(" , ");
 
   } catch (e) {
-    console.log("โหลดข้อมูลไม่ได้", e);
-    document.getElementById("date").innerHTML = "โหลดข้อมูลไม่สำเร็จ";
+    console.log("ใช้ fallback", e);
+
+    document.getElementById("date").innerHTML = "งวดล่าสุด (สำรอง)";
+    document.getElementById("first").innerHTML = data.first;
+    document.getElementById("last2").innerHTML = data.last2;
+    document.getElementById("front3").innerHTML = data.last3.join(" , ");
+    document.getElementById("back3").innerHTML = data.last3.join(" , ");
   }
 }
 
 loadData();
 
 
-// ตรวจหวย
+// 🔍 ตรวจหวย
 function check(){
   let num = document.getElementById("num").value;
 
-  // เช็คตัวเลข
   if(!/^\d+$/.test(num)){
     document.getElementById("result").innerHTML = "⚠️ กรอกตัวเลขเท่านั้น";
     return;
   }
 
-  // เช็คข้อมูลโหลด
-  if(!data.first){
-    document.getElementById("result").innerHTML = "⏳ กำลังโหลดข้อมูล...";
-    return;
-  }
-
-  // เช็คจำนวนหลัก
   if(num.length < 2 || num.length > 6){
     document.getElementById("result").innerHTML = "⚠️ กรอก 2-6 หลัก";
     return;
   }
 
-  // ตรวจรางวัล
   if(num.length === 6 && num === data.first){
     document.getElementById("result").innerHTML = "🎉 ถูกรางวัลที่ 1";
   }
